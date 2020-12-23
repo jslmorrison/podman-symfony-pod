@@ -1,0 +1,130 @@
+# Generation of Kubernetes YAML is still under development!
+#
+# Save the output of this file and use kubectl create -f to import
+# it into Kubernetes.
+#
+# Created with podman-2.2.1
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2020-12-23T18:40:49Z"
+  labels:
+    app: my-project-pod
+  name: my-project-pod
+spec:
+  containers:
+  - command:
+    - apache2-foreground
+    env:
+    - name: PATH
+      value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    - name: TERM
+      value: xterm
+    - name: container
+      value: podman
+    - name: PHP_EXTRA_BUILD_DEPS
+      value: apache2-dev
+    - name: PHP_SHA256
+      value: aead303e3abac23106529560547baebbedba0bb2943b91d5aa08fff1f41680f4
+    - name: PHP_ASC_URL
+      value: https://www.php.net/distributions/php-7.4.13.tar.xz.asc
+    - name: PHP_VERSION
+      value: 7.4.13
+    - name: PHPIZE_DEPS
+      value: "autoconf \t\tdpkg-dev \t\tfile \t\tg++ \t\tgcc \t\tlibc-dev \t\tmake \t\tpkg-config \t\tre2c"
+    - name: APACHE_CONFDIR
+      value: /etc/apache2
+    - name: PHP_CPPFLAGS
+      value: -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+    - name: PHP_INI_DIR
+      value: /usr/local/etc/php
+    - name: PHP_LDFLAGS
+      value: -Wl,-O1 -pie
+    - name: APACHE_ENVVARS
+      value: /etc/apache2/envvars
+    - name: GPG_KEYS
+      value: 42670A7FE4D0441C8E4632349E4FDC074A4EF02D 5A52880781F755608BF815FC910DEB46F53EA312
+    - name: PHP_CFLAGS
+      value: -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+    - name: PHP_URL
+      value: https://www.php.net/distributions/php-7.4.13.tar.xz
+    - name: PHP_EXTRA_CONFIGURE_ARGS
+      value: --with-apxs2 --disable-cgi
+    - name: HOSTNAME
+      value: my-project-pod
+    image: localhost/apache-web-base:1.3
+    name: sillymorse
+    ports:
+    - containerPort: 80
+      hostPort: 8080
+      protocol: TCP
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: true
+      capabilities:
+        drop:
+        - CAP_MKNOD
+        - CAP_NET_RAW
+        - CAP_AUDIT_WRITE
+      privileged: false
+      readOnlyRootFilesystem: false
+      seLinuxOptions: {}
+    volumeMounts:
+    - mountPath: /var/www/html
+      name: var-home-johnm-my-temp-project
+    workingDir: /var/www/html
+  - command:
+    - mysqld
+    env:
+    - name: PATH
+      value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    - name: TERM
+      value: xterm
+    - name: container
+      value: podman
+    - name: MYSQL_DATABASE
+      value: my_project
+    - name: MYSQL_PASSWORD
+      value: web
+    - name: MARIADB_VERSION
+      value: 1:10.5.8+maria~focal
+    - name: GPG_KEYS
+      value: 177F4010FE56CA3336300305F1656F24C74CD1D8
+    - name: MARIADB_MAJOR
+      value: "10.5"
+    - name: MYSQL_USER
+      value: web
+    - name: GOSU_VERSION
+      value: "1.12"
+    - name: MYSQL_ROOT_PASSWORD
+      value: root
+    - name: HOSTNAME
+      value: my-project-pod
+    image: docker.io/library/mariadb:latest
+    name: my-temp-project-db
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: true
+      capabilities:
+        drop:
+        - CAP_MKNOD
+        - CAP_NET_RAW
+        - CAP_AUDIT_WRITE
+      privileged: false
+      readOnlyRootFilesystem: false
+      seLinuxOptions: {}
+    workingDir: /
+  restartPolicy: Never
+  volumes:
+  - hostPath:
+      path: /var/home/johnm/my-temp-project
+      type: Directory
+    name: var-home-johnm-my-temp-project
+status: {}
+---
+metadata:
+  creationTimestamp: null
+spec: {}
+status:
+  loadBalancer: {}
+
