@@ -1,0 +1,51 @@
+---
+- name: Project playbook
+  hosts: localhost
+  collections:
+    - containers.podman
+  tasks:
+    - name: Create project pod
+      podman_pod:
+        name: my-project-pod
+        state: created
+        ports:
+          - 8080:80
+    - name: Build web container
+      podman_image:
+        name: jslmorrison/apache-web-base
+        path: ./docker
+        tag: latest
+    - name: Run web container in pod
+      podman_container:
+        pod: my-project-pod
+        name: my-web-base
+        image: jslmorrison/apache-web-base
+        volume:
+           /var/home/johnm/my-temp-project:/var/www/html:Z
+        state: present
+    - name: Run database container in pod
+      podman_container:
+        pod: my-project-pod
+        name: my-db
+        image: mariadb:10.5.8
+        state: present
+        env:
+          MYSQL_ROOT_PASSWORD: "root"
+          MYSQL_DATABASE: "my_project"
+          MYSQL_USER: "web"
+          MYSQL_PASSWORD: "web"
+    - name: Create the local env file with database dsn
+      lineinfile:
+        path: .env.local
+        line: DATABASE_URL="mysql://web:web@127.0.0.1/my_project?serverVersion=mariadb-10.5.8"
+        state: present
+        create: yes
+    - name: Symfony create database
+      wait_for:
+        timeout: 10
+    - name:
+      command: podman exec -it my-web-base php bin/console doc:database:create --if-not-exists
+    - name: Symfony schema up
+      command: podman exec -it my-web-base php bin/console doc:sch:up --force
+    - name: Symfony fixtures
+      command: podman exec -it my-web-base php bin/console doc:fix:load -n
