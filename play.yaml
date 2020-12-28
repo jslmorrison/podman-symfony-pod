@@ -20,8 +20,8 @@
         name: my-web-base
         image: registry.gitlab.com/jslmorrison-containers/php7.4-apache
         volume:
-           - ./my-temp-project:/var/www/html:Z
-           - ./my-temp-project/container/xdebug.ini:/usr/local/etc/php/conf.d/container-php-ext-xdebug.ini:Z
+           - "{{ ansible_user_dir }}/my-temp-project:/var/www/html:Z"
+           - "{{ ansible_user_dir }}/my-temp-project/container/xdebug.ini:/usr/local/etc/php/conf.d/container-php-ext-xdebug.ini:Z"
         state: present
     - name: Run database container in pod
       podman_container:
