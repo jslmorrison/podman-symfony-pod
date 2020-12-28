@@ -1,6 +1,6 @@
 ---
 - name: Project playbook
-  hosts: jm-silverblue
+  hosts: localhost
   collections:
     - containers.podman
   tasks:
@@ -20,8 +20,8 @@
         name: my-web-base
         image: registry.gitlab.com/jslmorrison-containers/php7.4-apache
         volume:
-           - "{{ ansible_user_dir }}/my-temp-project:/var/www/html:Z"
-           - "{{ ansible_user_dir }}/my-temp-project/container/xdebug.ini:/usr/local/etc/php/conf.d/container-php-ext-xdebug.ini:Z"
+          - "{{ playbook_dir }}:/var/www/html:Z"
+          - "{{ playbook_dir }}/container/xdebug.ini:/usr/local/etc/php/conf.d/container-php-ext-xdebug.ini:Z"
         state: present
     - name: Run database container in pod
       podman_container:
@@ -41,10 +41,11 @@
         state: present
         create: yes
     - name: Symfony create database
-      wait_for:
-        timeout: 10
-    - name:
-      command: podman exec -it my-web-base php bin/console doc:database:create --if-not-exists
+      command: podman exec -it my-db mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS my_project;"
+      register: result
+      until: result.failed == false
+      retries: 10
+      delay: 1
     - name: Symfony schema up
       command: podman exec -it my-web-base php bin/console doc:sch:up --force
     - name: Symfony fixtures
