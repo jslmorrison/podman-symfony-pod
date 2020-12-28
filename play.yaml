@@ -1,6 +1,6 @@
 ---
 - name: Project playbook
-  hosts: localhost
+  hosts: jm-silverblue
   collections:
     - containers.podman
   tasks:
@@ -12,16 +12,16 @@
           - 8080:80
     - name: Build web container
       podman_image:
-        name: jslmorrison/apache-web-base
-        path: ./docker
+        name: registry.gitlab.com/jslmorrison-containers/php7.4-apache
         tag: latest
     - name: Run web container in pod
       podman_container:
         pod: my-project-pod
         name: my-web-base
-        image: jslmorrison/apache-web-base
+        image: registry.gitlab.com/jslmorrison-containers/php7.4-apache
         volume:
-           /var/home/johnm/my-temp-project:/var/www/html:Z
+           - ./my-temp-project:/var/www/html:Z
+           - ./my-temp-project/container/xdebug.ini:/usr/local/etc/php/conf.d/container-php-ext-xdebug.ini:Z
         state: present
     - name: Run database container in pod
       podman_container:
