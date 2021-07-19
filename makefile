@@ -3,6 +3,7 @@
 	podman.all \
 	podman.clean \
 	podman.create_pod \
+	podman.build_web_container \
 	symfony.all \
 	symfony.create_db \
 	symfony.schema_up \
@@ -16,10 +17,19 @@ podman.clean:
 podman.create_pod:
 	podman pod create --name my-project-pod -p 8080:80
 podman.build_web_container:
-	podman build -t jslmorrison/apache-web-base:latest -f docker/Dockerfile
+	podman build -t web:latest -f container/Dockerfile
 podman.run_containers:
-	podman run --name=my-web-base -d -v /var/home/johnm/my-temp-project:/var/www/html:Z --pod=my-project-pod apache-web-base:latest
-	podman run --name="my-db" -d --pod=my-project-pod -e MYSQL_ROOT_PASSWORD="root" -e MYSQL_DATABASE="my_project" -e MYSQL_USER="web" -e MYSQL_PASSWORD="web" mariadb
+	podman run --name=my-web-base -d \
+		-v `pwd`:/var/www/html/app:Z --pod=my-project-pod \
+		localhost/web:latest
+	podman run --name=nginx -d \
+		-v `pwd`:/var/www/html/app:Z --pod=my-project-pod \
+		-v `pwd`/container/site.conf:/etc/nginx/conf.d/default.conf:Z \
+		docker.io/library/nginx
+	podman run --name="my-db" -d --pod=my-project-pod \
+		-e MYSQL_ROOT_PASSWORD="root" -e MYSQL_DATABASE="my_project" -e MYSQL_USER="web" -e MYSQL_PASSWORD="web" \
+		docker.io/library/mariadb
+
 podman.all: \
 	podman.clean \
 	podman.create_pod \
