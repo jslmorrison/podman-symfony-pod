@@ -11,18 +11,24 @@
         ports:
           - 8080:80
     - name: Build web container
-      podman_image:
-        name: registry.gitlab.com/jslmorrison-containers/php7.4-apache
-        tag: latest
+      command: podman build -t web:latest -f container/Dockerfile
     - name: Run web container in pod
       podman_container:
         pod: my-project-pod
         name: my-web-base
-        image: registry.gitlab.com/jslmorrison-containers/php7.4-apache
+        image: localhost/web:latest
         volume:
-          - "{{ playbook_dir }}:/var/www/html:Z"
+          - "{{ playbook_dir }}:/var/www/html/app:Z"
           - "{{ playbook_dir }}/container/xdebug.ini:/usr/local/etc/php/conf.d/container-php-ext-xdebug.ini:Z"
         state: present
+    - name: Run nginx container in pod
+      podman_container:
+        pod: my-project-pod
+        name: nginx
+        image: docker.io/library/nginx
+        volume:
+          - "{{ playbook_dir }}:/var/www/html/app:Z"
+          - "{{ playbook_dir }}/container/site.conf:/etc/nginx/conf.d/default.conf:Z"
     - name: Run database container in pod
       podman_container:
         pod: my-project-pod
